@@ -23,6 +23,7 @@ class _EditarPerfilState extends State<EditarPerfil> {
     super.initState();
     cargarDatos();
   }
+
   Future<void> cargarDatos() async{
     final userId=supabase.auth.currentUser?.id;
     if(userId==null){
@@ -36,7 +37,6 @@ class _EditarPerfilState extends State<EditarPerfil> {
     
     setState(() {
       nombreController.text=response['nombre']?? '';
-      nickController.text=response['nick'] ?? '';
       urlFoto=response['foto_url'];
     });
   }
@@ -53,9 +53,9 @@ class _EditarPerfilState extends State<EditarPerfil> {
   }
    Future<void> guardarCambios() async {
   final userId = supabase.auth.currentUser?.id;
-  print('Usuario: ${supabase.auth.currentUser?.id}');
+ 
   if (userId == null) {
-    print('⚠️ No hay usuario autenticado.');
+    
     return;
   }
 
@@ -65,33 +65,28 @@ class _EditarPerfilState extends State<EditarPerfil> {
     if (fotoNueva != null) {
       final nombreArchivo = 'perfil_$userId.jpg';
 
-      final response = await supabase.storage
+      await supabase.storage
           .from('perfil')
           .upload(nombreArchivo, fotoNueva!, fileOptions: const FileOptions(upsert: true));
-
-      print('✅ Imagen subida: $response');
 
       final url = supabase.storage
           .from('perfil')
           .getPublicUrl(nombreArchivo);
-
-      print('🔗 URL generada: $url');
       nuevaUrl = url;
     }
 
-    final res = await supabase.from('usuarios').update({
+    await supabase.from('usuarios').update({
       'nombre': nombreController.text,
-      'nick': nickController.text,
       if (nuevaUrl != null) 'foto_url': nuevaUrl,
     }).eq('id', userId);
 
-    print('✅ Usuario actualizado: $res');
+  
 
     if (mounted) {
       Navigator.pop(context);
     }
   } catch (e) {
-    print('❌ ERROR al guardar cambios: $e');
+    print('ERROR al guardar cambios: $e');
   }
 }
 
@@ -126,11 +121,6 @@ class _EditarPerfilState extends State<EditarPerfil> {
             TextField(
               controller: nombreController,
               decoration: const InputDecoration(labelText: 'Nombre para mostrar'),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: nickController,
-              decoration: const InputDecoration(labelText: 'Nick (@usuario)'),
             ),
             const SizedBox(height: 20),
             ElevatedButton(

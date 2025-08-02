@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:instagram_app/components/navegador_barra.dart';
 import 'package:instagram_app/editar_perfil.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -85,6 +86,7 @@ class _PerfilState extends State<Perfil> {
           ],
         ),
       ),
+      bottomNavigationBar: NavegadorBarra(indiceActual:3),
     );
   }
 }

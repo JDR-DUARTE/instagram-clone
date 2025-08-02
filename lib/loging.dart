@@ -28,7 +28,7 @@ class _LogingState extends State<Loging> {
         // Navegar a la pantalla principal (Feed)
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => Perfil()),
+          MaterialPageRoute(builder: (context) => Feed()),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -46,7 +46,16 @@ class _LogingState extends State<Loging> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Bienvenido a Conexa'),
+        title: Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Text(
+            'Bienvenido a Conexa',
+            style: TextStyle(
+              color: Colors.teal,
+              fontWeight: FontWeight.bold,
+            ),
+            ),
+        ),
       ),
       body: Column(
         children: [
@@ -58,7 +67,7 @@ class _LogingState extends State<Loging> {
                   setState(() {
                     mostrarReg=false;
                   });
-                }, 
+                },
                 child: Text('Iniciar Sesión')),
                 SizedBox(width: 10,),
                 ElevatedButton(
