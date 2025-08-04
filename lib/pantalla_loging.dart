@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:instagram_app/components/formulario_loging.dart';
+import 'package:instagram_app/components/formulario_Loging.dart';
 import 'package:instagram_app/components/formulario_registro.dart';
 import 'package:instagram_app/feed.dart';
 import 'package:instagram_app/perfil.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class Loging extends StatefulWidget {
-  const Loging({super.key});
+class PantallaLoging extends StatefulWidget {
+  const PantallaLoging({super.key});
 
   @override
-  State<Loging> createState() => _LogingState();
+  State<PantallaLoging> createState() => _PantallaLogingState();
 }
 
-class _LogingState extends State<Loging> {
+class _PantallaLogingState extends State<PantallaLoging> {
   bool mostrarReg=false;
   final supabase =Supabase.instance.client;
    Future<void> hacerLogin(String email, String password) async {

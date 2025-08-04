@@ -1,3 +1,4 @@
+import 'package:emailjs/emailjs.dart' as EmailJS;
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -11,11 +12,15 @@ class PerfilUsuarios extends StatefulWidget {
 
 class _PerfilUsuariosState extends State<PerfilUsuarios> {
   final supabase = Supabase.instance.client;
-  
   bool siguiendo = false;
+  final String serviceId = 'service_5noatff';
+  final String templateId = 'template_a1pp89a';
+  final String publicKey = 'dHgtQ_9jG2aW6HUEa';
+  bool enviandoEmail =false;
+
   Future<void> verificarSeSigue() async{
     final userId= supabase.auth.currentUser!.id;
-  final seguidoId =widget.usuario['id'];
+    final seguidoId =widget.usuario['id'];
 
     final response = await supabase
         .from('seguimientos')
@@ -28,11 +33,60 @@ class _PerfilUsuariosState extends State<PerfilUsuarios> {
       siguiendo=data !=null && data.isNotEmpty;
     });
   }
+  
   @override
   void initState(){
     super.initState();
     verificarSeSigue();
   }
+
+// Future<void> enviarEmail(String seguidoId) async {
+//   final userId = supabase.auth.currentUser!.id;
+
+//   final seguidorR = await supabase
+//       .from('usuarios')
+//       .select('nick,nombre')
+//       .eq('id', userId)
+//       .single();
+
+//   final seguidoR = await supabase
+//       .from('usuarios')
+//       .select('nick,nombre,email')
+//       .eq('id', seguidoId)
+//       .single();
+
+//   final emailSeguido = seguidoR['email'];
+
+//   if (emailSeguido == null) {
+//     print('No se pudo obtener el email del usuario seguido');
+//     return;
+//   }
+
+//   final templateParams = {
+//     'user_email': emailSeguido,
+//     // Agrega más campos si los usas en tu template, por ahora solo este
+//   };
+
+//   try {
+//     await EmailJS.send(
+//       serviceId,
+//       templateId,
+//       templateParams,
+//       const EmailJS.Options(
+//         publicKey: 'dHgtQ_9jG2aW6HUEa',
+//       ),
+//     );
+//     print('✅ Email enviado exitosamente con EmailJS');
+//   } catch (error) {
+//     if (error is EmailJS.EmailJSResponseStatus) {
+//       print('❌ Error ${error.status}: ${error.text}');
+//     } else {
+//       print('❌ Error desconocido: ${error.toString()}');
+//     }
+//   }
+// }
+
+
  Future<void> seguirUsuario() async {
   final userId = supabase.auth.currentUser!.id;
   final seguidoId = widget.usuario['id'];
@@ -56,7 +110,7 @@ class _PerfilUsuariosState extends State<PerfilUsuarios> {
       'seguidor_id': userId,
       'seguido_id': seguidoId,
     });
-
+  
     setState(() {
       siguiendo = true;
     });

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:instagram_app/components/navegador_barra.dart';
 import 'package:instagram_app/editar_perfil.dart';
+import 'package:instagram_app/pantalla_loging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Perfil extends StatefulWidget {
@@ -12,11 +13,13 @@ class Perfil extends StatefulWidget {
 
 class _PerfilState extends State<Perfil> {
   Map<String, dynamic>? perfil;
-
+  List<Map<String, dynamic>> publicaciones = [];
+  final supabase = Supabase.instance.client;
   @override
   void initState() {
     super.initState();
     cargarPerfil();
+    cargarPublicaciones();
   }
 
   Future<void> cargarPerfil() async {
@@ -26,7 +29,21 @@ class _PerfilState extends State<Perfil> {
       perfil = datos;
     });
   }
+  Future<void> cargarPublicaciones() async{
+    final userId = supabase.auth.currentUser!.id;
+    if(userId==null){
+      return;
+    }
+    final response = await Supabase.instance.client
+      .from('publicaciones')
+      .select('imagen_url')
+      .eq('usuario_id', userId)
+      .order('created_at', ascending: false);
+    setState(() {
+      publicaciones=List<Map<String,dynamic>>.from(response);
+    });
 
+  }
   Future<Map<String, dynamic>?> datosUser() async {
     final userId = Supabase.instance.client.auth.currentUser?.id;
 
@@ -41,6 +58,12 @@ class _PerfilState extends State<Perfil> {
     return response;
   }
 
+  Future<void> cerrarSesion() async {
+    await supabase.auth.signOut();
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context)=>PantallaLoging()),(Route<dynamic>route)=>false,);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (perfil == null) {
@@ -48,45 +71,75 @@ class _PerfilState extends State<Perfil> {
     }
     return Scaffold(
       appBar: AppBar(title: const Text('Mi Perfil')),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            // Foto de perfil
-            CircleAvatar(
-              radius: 50,
-              backgroundImage: NetworkImage(perfil!['foto_url']),
-            ),
-            const SizedBox(height: 20),
-
-            // Nombre del usuario
-            Text(
-              perfil!['nombre'] ?? '',
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-
-            // Nick (@usuario)
-            Text(
-              '@${perfil!['nick']}',
-              style: const TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-            SizedBox(height: 10),
-            Text(perfil!['email'] ?? ''),
-            SizedBox(height: 10,),
-            ElevatedButton(
-              onPressed: (){
-                Navigator.push(
-                  context, 
-                  MaterialPageRoute(builder: (context)=>EditarPerfil()),
-                  ).then((_){
+  body: SingleChildScrollView(
+    child: Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        children: [
+          // Parte de perfil
+          CircleAvatar(
+            radius: 50,
+            backgroundImage: NetworkImage(perfil!['foto_url']),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            perfil!['nombre'] ?? '',
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            '@${perfil!['nick']}',
+            style: const TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+          const SizedBox(height: 10),
+          Text(perfil!['email'] ?? ''),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => EditarPerfil()),
+                  ).then((_) {
                     cargarPerfil();
                   });
-              }, 
-              child: Text('Editar Perfil'),),
-          ],
-        ),
+                },
+                child: const Text('Editar Perfil'),
+              ),
+              const SizedBox(width: 20),
+              ElevatedButton(
+                onPressed: cerrarSesion,
+                child: const Text('Cerrar'),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+          const Divider(), // ✅ Ahora sí está bien ubicado
+
+          const SizedBox(height: 10),
+          publicaciones.isEmpty
+              ? const Text('Aún no tienes publicaciones')
+              : GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: publicaciones.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 4,
+                    crossAxisSpacing: 4,
+                  ),
+                  itemBuilder: (context, index) {
+                    final pub = publicaciones[index];
+                    return Image.network(pub['imagen_url'], fit: BoxFit.cover);
+                  },
+                ),
+        ],
       ),
-      bottomNavigationBar: NavegadorBarra(indiceActual:3),
+    ),
+  ),
+      bottomNavigationBar: NavegadorBarra(indiceActual: 3),
     );
   }
 }

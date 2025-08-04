@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:instagram_app/components/navegador_barra.dart';
+import 'package:instagram_app/mensajeria.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:typed_data';
@@ -15,11 +16,6 @@ class Feed extends StatefulWidget {
 
 class _FeedState extends State<Feed> {
   final supabase = Supabase.instance.client;
-
-  Future<void> cerrarSesion() async {
-    await supabase.auth.signOut();
-    Navigator.pop(context);
-  }
 
   Future<void> subirFoto() async {
     try {
@@ -93,9 +89,24 @@ class _FeedState extends State<Feed> {
     final user = Supabase.instance.client.auth.currentUser;
     return Scaffold(
       appBar: AppBar(
-        title: Text('feed conexa'),
         backgroundColor: Colors.purple,
         foregroundColor: Colors.white,
+        title: const Text(
+          'conexa',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.messenger),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Mensajeria()),
+              );
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: Padding(
         padding: EdgeInsets.all(20),
