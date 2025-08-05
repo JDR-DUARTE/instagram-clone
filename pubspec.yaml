@@ -42,6 +42,8 @@ dependencies:
   path: ^1.8.0
   uuid: ^4.0.0
   video_player: ^2.7.0
+  flutter_mentions: ^2.0.1
+  flutter_portal: ^0.4.0
 
 dev_dependencies:
   flutter_test:

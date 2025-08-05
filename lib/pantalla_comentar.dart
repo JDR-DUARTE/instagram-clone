@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_mentions/flutter_mentions.dart';
+import 'package:flutter_portal/flutter_portal.dart';
 
 class PantallaComentar extends StatefulWidget {
   final int publicacionId;
@@ -14,6 +17,27 @@ class _PantallaComentarState extends State<PantallaComentar> {
   List<Map<String,dynamic>> comentarios=[];
   final TextEditingController comentarioControl= TextEditingController();
   Map<String, dynamic>?publicacion;
+  final GlobalKey<FlutterMentionsState> key = GlobalKey();
+  List<Map<String,dynamic>> sugerencias=[];
+
+ Future<void> cargarUsuarios() async {
+  final response = await supabase
+    .from('usuarios')
+    .select('id, nick, foto_url')
+    .limit(50);
+    
+  setState(() {
+    sugerencias = List<Map<String, dynamic>>.from(response).map((usuario) {
+      return {
+        'id': usuario['id'],
+        'display': usuario['nick'],
+        'photo': usuario['foto_url'],
+      };
+    }).toList();
+    print('SUGERENCIAS:');
+    print(sugerencias);
+  });
+}
   Future<void> cargarComentarios()async{
     final respose =await supabase
       .from('comentarios')
@@ -37,91 +61,158 @@ class _PantallaComentarState extends State<PantallaComentar> {
     publicacion = response;
   });
   }
+
   Future<void> crearComentario() async{
-    final texto =comentarioControl.text.trim();
+    final texto =key.currentState!.controller!.text.trim();
     if(texto.isEmpty){
       return;
     }
     final userId= supabase.auth.currentUser!.id;
 
-    await supabase.from('comentarios').insert({
-      'comentario':texto,
-      'usuario_id':userId,
-      'publicacion_id': widget.publicacionId,
-    });
-    comentarioControl.clear();
+    final comentarioR=await supabase
+      .from('comentarios')
+      .insert({
+        'comentario':texto,
+        'usuario_id':userId,
+        'publicacion_id': widget.publicacionId,
+    })
+    .select()
+    .single();
+    final markup = key.currentState!.controller!.markupText;
+    final menciones=RegExp(r'\@\[(.*?)\]\((.*?)\)').allMatches(markup);
+    
+    for(final match in menciones){
+      final posibleId = match.group(1)!;
+      final posibleDisplay = match.group(2)!;
+      final idUsuario = posibleId.replaceAll('__', '');
+      final display = posibleDisplay.replaceAll('__', '');
+
+      print('ID limpio: $idUsuario');
+      print('Display limpio: $display');
+
+      await supabase
+      .from('menciones')
+      .insert({
+        'comentario_id':comentarioR['id'],
+        'mencionado_id':idUsuario,
+      });
+      print('idMensionado: $idUsuario');
+    }
+    key.currentState!.controller!.clear();
     cargarComentarios();
   }
+
+
   @override
   void initState(){
     super.initState();
+    cargarUsuarios();
     cargarComentarios();
     cargarPublicacion();
   }
 @override
 Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(title: Text("Comentarios")),
-    body: Column(
-      children: [
-        // Mostrar la publicación original (autor + imagen)
-        if (publicacion != null)
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ListTile(
-                leading: CircleAvatar(
-                  backgroundImage: NetworkImage(publicacion!['usuarios']['foto_url']),
-                ),
-                title: Text(publicacion!['usuarios']['nombre']),
+  return Portal(
+    child: Scaffold(
+      appBar: AppBar(title: const Text("Comentarios")),
+      resizeToAvoidBottomInset: true,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
               ),
-              Image.network(
-                publicacion!['imagen_url'],
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
-                    Center(child: Icon(Icons.broken_image)),
-              ),
-              const SizedBox(height: 12),
-            ],
-          ),
-
-        // Lista de comentarios
-        Expanded(
-          child: ListView.builder(
-            itemCount: comentarios.length,
-            itemBuilder: (context, index) {
-              final comentario = comentarios[index];
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundImage: NetworkImage(comentario['usuarios']['foto_url']),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (publicacion != null)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ListTile(
+                              leading: CircleAvatar(
+                                backgroundImage: NetworkImage(publicacion!['usuarios']['foto_url']),
+                              ),
+                              title: Text(publicacion!['usuarios']['nombre']),
+                            ),
+                            Image.network(
+                              publicacion!['imagen_url'],
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Center(child: Icon(Icons.broken_image)),
+                            ),
+                            SizedBox(height: 12),
+                          ],
+                        ),
+                      ...comentarios.map((comentario) {
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundImage:
+                                NetworkImage(comentario['usuarios']['foto_url']),
+                          ),
+                          title: Text(comentario['usuarios']['nombre']),
+                          subtitle: Text(comentario['comentario']),
+                        );
+                      }).toList(),
+    
+                      Spacer(),
+                      Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: FlutterMentions(
+                                key: key,
+                              
+                                decoration:InputDecoration(
+                                  hintText: "Escribe un comentario...",
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                                maxLength: 200,
+                                mentions: [
+                                  Mention(
+                                    trigger: '@',
+                                    style: TextStyle(
+                                      color: Colors.purple
+                                    ),
+                                    data:sugerencias,
+                                    suggestionBuilder: (data) {
+                                      print('Construyendo sugerencia: $data');
+                                      return ListTile(
+                                        leading: CircleAvatar(
+                                          backgroundImage: NetworkImage(data['photo']
+                                          ),
+                                        ),
+                                        title:Text(data['display']),
+                                      );
+                                    },
+                                    )
+                                ],
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            IconButton(
+                              icon: const Icon(Icons.send),
+                              onPressed: crearComentario,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                title: Text(comentario['usuarios']['nombre']),
-                subtitle: Text(comentario['comentario']),
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
-
-        // Campo para escribir y enviar comentario
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: comentarioControl,
-                  decoration: InputDecoration(hintText: "Escribe un comentario..."),
-                ),
-              ),
-              IconButton(
-                icon: Icon(Icons.send),
-                onPressed: crearComentario,
-              ),
-            ],
-          ),
-        ),
-      ],
+      ),
     ),
   );
 }

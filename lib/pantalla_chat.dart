@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+
 class PantallaChat extends StatefulWidget {
   final String receptorId;
   final String receptorNombre;
@@ -133,6 +134,7 @@ Future<void> cargarMsj() async {
                 Expanded(
                   child: TextField(
                     controller: msjControlador,
+                    maxLength: 200,
                     decoration: const InputDecoration(
                       hintText: 'Escribe un mensaje...',
                     ),
