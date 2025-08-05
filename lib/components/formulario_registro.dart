@@ -65,6 +65,7 @@ class _FormularioRegistroState extends State<FormularioRegistro> {
           SnackBar(content: Text('¡Revisa tu correo y confírmalo para completar el registro!')),
         );
       }
+
     } catch (e) {
       print("Error en registro: $e");
       setState(() {
@@ -72,42 +73,51 @@ class _FormularioRegistroState extends State<FormularioRegistro> {
       });
     }
   }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(20),
-      child: ListView(
-        children: [
-          TextField(
-            controller: emailController,
-            decoration: InputDecoration(labelText: 'Email'),
-          ),
-          SizedBox(height: 10),
-          TextField(
-            controller: passwordController,
-            obscureText: true,
-            decoration: InputDecoration(labelText: 'Password'),
-          ),
-          SizedBox(height: 10),
-          TextField(
-            controller: nickController,
-            decoration: InputDecoration(labelText: 'Nick (@usuario)'),
-          ),
-          SizedBox(height: 20),
-           TextField(
-            controller: nombreController,
-            decoration: InputDecoration(labelText: 'Nombre para mostrar'),
-          ),
-          SizedBox(height: 20),
-          ElevatedButton(onPressed: registrarUser, child: Text('Registrar')),
-          if (msjError.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Text(msjError, style: TextStyle(color: Colors.red)),
+@override
+Widget build(BuildContext context) {
+  return Padding(
+    padding: EdgeInsets.all(20),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextField(
+          controller: emailController,
+          decoration: InputDecoration(labelText: 'Email'),
+        ),
+        SizedBox(height: 10),
+        TextField(
+          controller: passwordController,
+          obscureText: true,
+          decoration: InputDecoration(labelText: 'Password'),
+        ),
+        SizedBox(height: 10),
+        TextField(
+          controller: nickController,
+          decoration: InputDecoration(labelText: 'Nick (@usuario)'),
+        ),
+        SizedBox(height: 20),
+        TextField(
+          controller: nombreController,
+          decoration: InputDecoration(labelText: 'Nombre para mostrar'),
+        ),
+        SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: registrarUser,
+          child: Text(
+            'Registrar',
+            style: TextStyle(
+              color: Color.fromRGBO(108, 54, 215, 0.988),
+              fontWeight: FontWeight.bold,
             ),
-        ],
-      ),
-    );
-  }
+          ),
+        ),
+        if (msjError.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Text(msjError, style: TextStyle(color: Colors.red)),
+          ),
+      ],
+    ),
+  );
+}
 }

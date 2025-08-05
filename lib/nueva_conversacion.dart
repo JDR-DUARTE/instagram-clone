@@ -57,8 +57,14 @@ class _NuevaConversacionState extends State<NuevaConversacion> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Elegir seguidor'),
-        backgroundColor: Colors.purple,
+        title: const Text(
+          'Elegir seguidor',
+           style: TextStyle(
+            fontWeight: FontWeight.bold, 
+            fontFamily: 'Verdana'
+           ),
+          ),
+        backgroundColor: Color.fromRGBO(98, 67, 159, 0.988),
         foregroundColor: Colors.white,
       ),
       body: cargando
@@ -83,8 +89,14 @@ class _NuevaConversacionState extends State<NuevaConversacion> {
                             ? const Icon(Icons.person)
                             : null,
                       ),
-                      title: Text(seguidorMsjs['nombre'] ?? seguidorMsjs['nick']),
-                      subtitle: Text('@${seguidorMsjs['nick']}'),
+                      title: Text(
+                        seguidorMsjs['nick'] ?? seguidorMsjs['nombre'],
+                          style: TextStyle(
+                          fontWeight: FontWeight.bold, 
+                          fontFamily: 'Verdana'
+                        ),
+                      ),
+                      // subtitle: Text('${seguidorMsjs['nick']}'),
                       onTap: () => abrirChat(seguidorMsjs),
                     ),
                   );

@@ -41,8 +41,14 @@ class _FormularioLogingState extends State<FormularioLoging> {
               final email = emailController.text.trim();
               final clave = claveController.text.trim();
               widget.onLogin(email, clave);
-            }, 
-            child:Text('Iniciar Sesión')),
+            },
+            child:Text(
+              'Iniciar Sesión',
+              style: TextStyle(
+                color: Color.fromRGBO(108, 54, 215, 0.988),
+                fontWeight: FontWeight.bold,
+              ),
+              )),
         )
       ],
     );

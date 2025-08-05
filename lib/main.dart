@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:instagram_app/inicio.dart';
+
 import 'package:instagram_app/pantalla_loging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

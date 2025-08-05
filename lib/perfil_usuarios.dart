@@ -160,8 +160,8 @@ class _PerfilUsuariosState extends State<PerfilUsuarios> {
     final persona = widget.usuario;
     return Scaffold(
       appBar: AppBar(
-        title: Text('@${persona['nick']}'),
-        backgroundColor: Colors.purple,
+        title: Text('${persona['nick']}'),
+        backgroundColor: Color.fromRGBO(98, 67, 159, 0.988),
         foregroundColor: Colors.white,
       ),
       body: Padding(
@@ -194,10 +194,16 @@ class _PerfilUsuariosState extends State<PerfilUsuarios> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: siguiendo
-                    ? const Color.fromARGB(255, 244, 54, 216)
-                    : Colors.blue,
+                    ? const Color.fromARGB(255, 242, 229, 229)
+                    : Color.fromRGBO(98, 67, 159, 0.988),
               ),
-              child: Text(siguiendo ? 'Dejar de seguir' : 'Seguir'),
+              child: Text(
+                siguiendo ? 'Dejar de seguir' : 'Seguir',
+                style: TextStyle(
+                  color: siguiendo? Colors.black : Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
             const Divider(),
             const SizedBox(height: 10),

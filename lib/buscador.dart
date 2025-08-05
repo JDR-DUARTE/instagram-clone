@@ -36,8 +36,14 @@ class _BuscadorState extends State<Buscador> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Buscar usuarios'),
-        backgroundColor: Colors.purple,
+        title: Text(
+          'Buscar usuarios',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Verdana'
+          ),
+        ),
+        backgroundColor: Color.fromRGBO(98, 67, 159, 0.988),
         foregroundColor: Colors.white,
       ),
       body: Padding(

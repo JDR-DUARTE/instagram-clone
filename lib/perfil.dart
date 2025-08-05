@@ -71,13 +71,23 @@ class _PerfilState extends State<Perfil> {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     return Scaffold(
-      appBar: AppBar(title: const Text('Mi Perfil')),
+      appBar: AppBar(
+        title: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            perfil!['nick'],
+            style: TextStyle(
+              color: Color.fromRGBO(98, 67, 159, 0.988),
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Verdana',
+            ),
+          ),
+        )),
   body: SingleChildScrollView(
     child: Padding(
       padding: const EdgeInsets.all(20.0),
       child: Column(
         children: [
-          // Parte de perfil
           CircleAvatar(
             radius: 50,
             backgroundImage: NetworkImage(perfil!['foto_url']),
@@ -85,7 +95,12 @@ class _PerfilState extends State<Perfil> {
           const SizedBox(height: 20),
           Text(
             perfil!['nombre'] ?? '',
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+             style: TextStyle(
+              color: Color.fromRGBO(98, 67, 159, 0.988),
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Verdana',
+              fontSize: 24,
+            ),
           ),
           Text(
             '@${perfil!['nick']}',

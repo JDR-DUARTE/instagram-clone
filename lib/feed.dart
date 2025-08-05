@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:instagram_app/components/navegador_barra.dart';
 import 'package:instagram_app/historias_usuarios.dart';
+import 'package:instagram_app/menciones.dart';
 import 'package:instagram_app/mensajeria.dart';
 import 'package:instagram_app/pantalla_comentar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -73,7 +74,9 @@ class _FeedState extends State<Feed> {
 
       final response = await supabase
           .from('publicaciones')
-          .select('id,imagen_url,created_at,usuario_id,usuarios(nombre, foto_url)')
+          .select(
+            'id,imagen_url,created_at,usuario_id,usuarios(nombre, foto_url)',
+          )
           .inFilter('usuario_id', seguidos)
           .order('created_at', ascending: false);
 
@@ -97,13 +100,23 @@ class _FeedState extends State<Feed> {
     final user = supabase.auth.currentUser;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.purple,
+        backgroundColor: Color.fromRGBO(98, 67, 159, 0.988),
         foregroundColor: Colors.white,
-        title: const Text(
-          'conexa',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        title: Image.asset(
+          'assets/conexa4.png',
+          height: 35,
         ),
         actions: [
+          IconButton(
+            icon: Icon(Icons.favorite),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Menciones()),
+              );
+            },
+          ),
+          const SizedBox(width: 8),
           IconButton(
             icon: Icon(Icons.messenger),
             onPressed: () {
@@ -114,6 +127,7 @@ class _FeedState extends State<Feed> {
             },
           ),
           const SizedBox(width: 8),
+
         ],
       ),
       body: Padding(
@@ -150,7 +164,7 @@ class _FeedState extends State<Feed> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            //avatar
+                            
                             Container(
                               padding: EdgeInsets.all(3),
                               decoration: BoxDecoration(
@@ -188,7 +202,7 @@ class _FeedState extends State<Feed> {
                       itemBuilder: (context, index) {
                         final post = posts[index];
                         return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
+                          margin: const EdgeInsets.only(bottom: 18),
                           decoration: BoxDecoration(
                             border: Border.all(color: Colors.grey.shade300),
                             borderRadius: BorderRadius.circular(12),
@@ -224,7 +238,9 @@ class _FeedState extends State<Feed> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => PantallaComentar(publicacionId: post['id'],),
+                                      builder: (context) => PantallaComentar(
+                                        publicacionId: post['id'],
+                                      ),
                                     ),
                                   );
                                 },

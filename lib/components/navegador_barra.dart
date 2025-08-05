@@ -40,6 +40,8 @@ class NavegadorBarra extends StatelessWidget {
     return CurvedNavigationBar(
       index: indiceActual,
       height: 60,
+      color: Color.fromRGBO(98, 67, 159, 0.988),
+      backgroundColor:  Colors.white60,
       onTap: (index) => _ir(context, index),
       items: [
         _buildIcono(Icons.home, indiceActual == 0),
@@ -55,8 +57,8 @@ class NavegadorBarra extends StatelessWidget {
       icon,
       size: 30,
       color: activo
-          ? const Color.fromARGB(255, 250, 120, 189)
-          : Colors.blueAccent,
+          ? Colors.white
+          : Colors.white,
     );
   }
 }

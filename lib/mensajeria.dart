@@ -15,54 +15,61 @@ class _MensajeriaState extends State<Mensajeria> {
   List<Map<String, dynamic>> conversaciones = [];
 
   @override
-void initState() {
-  super.initState();
-  cargarConversa();
-}
-  Future<void> cargarConversa()async{
-    final userId =supabase.auth.currentUser!.id;
-    final mensajes =await supabase
-    .from('mensajes')
-    .select('emisor_id,receptor_id')
-    .or('emisor_id.eq.$userId,receptor_id.eq.$userId');
+  void initState() {
+    super.initState();
+    cargarConversa();
+  }
 
-    final Set<String> otrosUsuarios={};
+  Future<void> cargarConversa() async {
+    final userId = supabase.auth.currentUser!.id;
+    final mensajes = await supabase
+        .from('mensajes')
+        .select('emisor_id,receptor_id')
+        .or('emisor_id.eq.$userId,receptor_id.eq.$userId');
 
-    for (var msj in mensajes){
-      final emisor =msj['emisor_id'];
-      final receptor =msj['receptor_id'];
+    final Set<String> otrosUsuarios = {};
 
-      if(emisor!=userId){
+    for (var msj in mensajes) {
+      final emisor = msj['emisor_id'];
+      final receptor = msj['receptor_id'];
+
+      if (emisor != userId) {
         otrosUsuarios.add(emisor);
       }
-      if(receptor!=userId){
+      if (receptor != userId) {
         otrosUsuarios.add(receptor);
       }
     }
-    if(otrosUsuarios.isEmpty){
+    if (otrosUsuarios.isEmpty) {
       setState(() {
-        conversaciones=[];
+        conversaciones = [];
       });
       return;
     }
-    final datos =await supabase 
-      .from('usuarios')
-      .select('id,nombre,nick,foto_url')
-      .inFilter('id', otrosUsuarios.toList());
-      setState(() {
-        conversaciones=List<Map<String,dynamic>>.from(datos);
-      });
+    final datos = await supabase
+        .from('usuarios')
+        .select('id,nombre,nick,foto_url')
+        .inFilter('id', otrosUsuarios.toList());
+    setState(() {
+      conversaciones = List<Map<String, dynamic>>.from(datos);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mensajes'),
-        backgroundColor: Colors.purple,
+        title: const Text(
+          'Mensajes',
+          style: TextStyle(
+            fontWeight: FontWeight.bold, 
+            fontFamily: 'Verdana'
+            ),
+        ),
+        backgroundColor: Color.fromRGBO(98, 67, 159, 0.988),
         foregroundColor: Colors.white,
       ),
-      
+
       body: conversaciones.isEmpty
           ? Center(
               child: Text(
@@ -71,8 +78,8 @@ void initState() {
               ),
             )
           : Padding(
-            padding: const EdgeInsets.only(top:15.0),
-            child: ListView.builder(
+              padding: const EdgeInsets.only(top: 15.0),
+              child: ListView.builder(
                 itemCount: conversaciones.length,
                 itemBuilder: (context, index) {
                   final conv = conversaciones[index];
@@ -85,8 +92,14 @@ void initState() {
                             ? NetworkImage(conv['foto_url'])
                             : null,
                       ),
-                      title: Text(conv['nombre'] ?? conv['nick'] ?? ''),
-                                
+                      title: Text(
+                        conv['nick'] ?? conv['nombre'] ?? '',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Verdana',
+                        ),
+                      ),
+
                       onTap: () {
                         Navigator.push(
                           context,
@@ -102,7 +115,7 @@ void initState() {
                   );
                 },
               ),
-          ),
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final usuario = await Navigator.push(
@@ -110,7 +123,8 @@ void initState() {
             MaterialPageRoute(builder: (context) => const NuevaConversacion()),
           );
         },
-        backgroundColor: Colors.purple,
+        backgroundColor: Color.fromRGBO(98, 67, 159, 0.988),
+        foregroundColor: Colors.white,
         child: Icon(Icons.add),
       ),
     );

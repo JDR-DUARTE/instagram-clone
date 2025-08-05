@@ -154,7 +154,17 @@ class _SubirFotoState extends State<SubirFoto> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Nueva publicación')),
+      appBar: AppBar(
+        title: Text(
+          'Nueva publicación',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Verdana',
+            color: Color.fromRGBO(98, 67, 159, 0.988)
+          ),
+          
+          )
+        ),
       body: Center(
         child: SingleChildScrollView(
           child: Column(
@@ -179,12 +189,24 @@ class _SubirFotoState extends State<SubirFoto> {
                   ElevatedButton(
                     onPressed: seleccImagen,
                 
-                    child: const Text('Seleccionar\n    Imagen'),
+                    child:Text(
+                      'Seleccionar\n    Imagen',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color:Color.fromRGBO(98, 67, 159, 0.988),
+                      ),
+                      ),
                   ),
                   const SizedBox(width: 20),
                   ElevatedButton(
                     onPressed: seleccVideo,
-                    child: const Text('Seleccionar \n      Video'),
+                    child: Text(
+                      'Seleccionar \n      Video',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color:Color.fromRGBO(98, 67, 159, 0.988),
+                      ),
+                      ),
                   ),
                 ],
               ),
