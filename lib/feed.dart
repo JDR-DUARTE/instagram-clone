@@ -1,11 +1,9 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:instagram_app/components/navegador_barra.dart';
+import 'package:instagram_app/historias_usuarios.dart';
 import 'package:instagram_app/mensajeria.dart';
+import 'package:instagram_app/pantalla_comentar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter/foundation.dart';
-import 'dart:typed_data';
 
 class Feed extends StatefulWidget {
   const Feed({super.key});
@@ -16,77 +14,87 @@ class Feed extends StatefulWidget {
 
 class _FeedState extends State<Feed> {
   final supabase = Supabase.instance.client;
+  List<Map<String, dynamic>> posts = [];
+  List<Map<String, dynamic>> stories = [];
 
-  Future<void> subirFoto() async {
+  Future<void> cargarHistorias() async {
     try {
-      final ImagePicker picker = ImagePicker();
-      final XFile? imagen = await picker.pickImage(source: ImageSource.gallery);
+      final userId = supabase.auth.currentUser!.id;
+      List<String> seguidos = [];
+      final seguidosR = await supabase
+          .from('seguimientos')
+          .select('seguido_id')
+          .eq('seguidor_id', userId);
 
-      if (imagen == null) {
-        print('No se seleccionó ninguna imagen');
-        return;
+      for (var item in seguidosR) {
+        seguidos.add(item['seguido_id']);
+      }
+      seguidos.add(userId);
+
+      final response = await supabase
+          .from('historias')
+          .select(
+            'usuario_id,media_url,tipo,created_at,usuarios (nick,foto_url)',
+          )
+          .inFilter('usuario_id', seguidos)
+          .order('created_at', ascending: false);
+
+      // Agrupar por usuario y tomar solo la más reciente por usuario
+      final Map<String, Map<String, dynamic>> historiasPorUsuario = {};
+      for (final historia in response) {
+        final id = historia['usuario_id'];
+        if (!historiasPorUsuario.containsKey(id)) {
+          historiasPorUsuario[id] = historia;
+        }
       }
 
-      final user = supabase.auth.currentUser;
-      if (user == null) {
-        print('No hay usuario logueado');
-        return;
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Subiendo foto...'),
-          backgroundColor: Colors.orange,
-          duration: Duration(seconds: 2),
-        ),
-      );
-
-      final String nombreArchivo =
-          'foto_${user.id}_${DateTime.now().millisecondsSinceEpoch}.jpg';
-
-      // 👇 Aquí es donde diferenciamos entre Web y Móvil
-      if (kIsWeb) {
-        // WEB: usar bytes (Uint8List)
-        final bytes = await imagen.readAsBytes();
-        await supabase.storage.from('fotos').uploadBinary(nombreArchivo, bytes);
-      } else {
-        // MÓVIL: usar File
-        final file = File(imagen.path);
-        await supabase.storage.from('fotos').upload(nombreArchivo, file);
-      }
-
-      final publicUrl = supabase.storage
-          .from('fotos')
-          .getPublicUrl(nombreArchivo);
-
-      await supabase.from('posts').insert({
-        'usuarioId': user.id,
-        'email': user.email,
-        'url_imagen': publicUrl,
-        'descripcion': 'Mi nueva foto',
-        // 'fecha': DateTime.now().toIso8601String(),
+      setState(() {
+        stories = historiasPorUsuario.values.toList();
       });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('¡Foto subida exitosamente!'),
-          backgroundColor: Colors.green,
-        ),
-      );
     } catch (e) {
-      print('Error al subir foto: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al subir foto'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      print('error al cargar historias: $e');
+    }
+  }
+
+  Future<void> cargarPublicaciones() async {
+    try {
+      List<String> seguidos = [];
+      final userId = supabase.auth.currentUser!.id;
+
+      final seguidosR = await supabase
+          .from('seguimientos')
+          .select('seguido_id')
+          .eq('seguidor_id', userId);
+
+      for (var item in seguidosR) {
+        seguidos.add(item['seguido_id']);
+      }
+      seguidos.add(userId);
+
+      final response = await supabase
+          .from('publicaciones')
+          .select('id,imagen_url,created_at,usuario_id,usuarios(nombre, foto_url)')
+          .inFilter('usuario_id', seguidos)
+          .order('created_at', ascending: false);
+
+      setState(() {
+        posts = List<Map<String, dynamic>>.from(response);
+      });
+    } catch (e) {
+      print('error al cargar publicaciones: $e');
     }
   }
 
   @override
+  void initState() {
+    super.initState();
+    cargarHistorias();
+    cargarPublicaciones();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final user = Supabase.instance.client.auth.currentUser;
+    final user = supabase.auth.currentUser;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.purple,
@@ -113,21 +121,133 @@ class _FeedState extends State<Feed> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Hola!',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'tu email: ${user?.email}',
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-            ),
-            SizedBox(height: 30),
-            Text(
-              'Posts de la comunidad:',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
+            if (stories.isNotEmpty)
+              SizedBox(
+                height: 120,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: stories.length,
+                  itemBuilder: (context, index) {
+                    final historia = stories[index];
+                    final nick = historia['usuarios']['nick'];
+                    final foto = historia['usuarios']['foto_url'];
+
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => HistoriasUsuario(
+                              usuarioId: historia['usuario_id'],
+                              nick: historia['usuarios']['nick'] ?? 'nick',
+                            ),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        margin: EdgeInsets.only(right: 12),
+                        width: 80,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            //avatar
+                            Container(
+                              padding: EdgeInsets.all(3),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Colors.purple,
+                                  width: 2,
+                                ),
+                                shape: BoxShape.circle,
+                              ),
+                              child: CircleAvatar(
+                                radius: 35,
+                                backgroundImage: NetworkImage(foto),
+                              ),
+                            ),
+                            SizedBox(height: 6),
+                            Text(
+                              nick,
+                              style: TextStyle(fontSize: 14),
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
             SizedBox(height: 15),
+            Expanded(
+              child: posts.isEmpty
+                  ? Center(child: Text('No hay publicaciones disponibles.'))
+                  : ListView.builder(
+                      itemCount: posts.length,
+                      itemBuilder: (context, index) {
+                        final post = posts[index];
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 8,
+                                ),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 16,
+                                      backgroundImage: NetworkImage(
+                                        post['usuarios']['foto_url'],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      post['usuarios']['nombre'] ?? 'Usuario',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PantallaComentar(publicacionId: post['id'],),
+                                    ),
+                                  );
+                                },
+                                child: Image.network(
+                                  post['imagen_url'],
+                                  fit: BoxFit.cover,
+                                  loadingBuilder: (context, child, progress) {
+                                    if (progress == null) return child;
+                                    return Center(
+                                      child: CircularProgressIndicator(),
+                                    );
+                                  },
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Center(child: Icon(Icons.broken_image)),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+            ),
           ],
         ),
       ),
