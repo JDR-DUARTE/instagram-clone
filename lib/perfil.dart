@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:instagram_app/components/navegador_barra.dart';
 import 'package:instagram_app/editar_perfil.dart';
+import 'package:instagram_app/pantalla_comentar.dart';
 import 'package:instagram_app/pantalla_loging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -36,7 +37,7 @@ class _PerfilState extends State<Perfil> {
     }
     final response = await Supabase.instance.client
       .from('publicaciones')
-      .select('imagen_url')
+      .select('id,imagen_url')
       .eq('usuario_id', userId)
       .order('created_at', ascending: false);
     setState(() {
@@ -116,7 +117,7 @@ class _PerfilState extends State<Perfil> {
           ),
 
           const SizedBox(height: 20),
-          const Divider(), // ✅ Ahora sí está bien ubicado
+          const Divider(), 
 
           const SizedBox(height: 10),
           publicaciones.isEmpty
@@ -132,7 +133,16 @@ class _PerfilState extends State<Perfil> {
                   ),
                   itemBuilder: (context, index) {
                     final pub = publicaciones[index];
-                    return Image.network(pub['imagen_url'], fit: BoxFit.cover);
+                    return GestureDetector(
+                      onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>PantallaComentar(publicacionId: pub['id']),
+                            ),
+                          );
+                        },
+                      child: Image.network(pub['imagen_url'], fit: BoxFit.cover));
                   },
                 ),
         ],
