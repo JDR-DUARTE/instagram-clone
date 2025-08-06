@@ -113,7 +113,7 @@ class _PantallaComentarState extends State<PantallaComentar> {
   Widget build(BuildContext context) {
     return Portal(
       child: Scaffold(
-        appBar: AppBar(title: const Text("Comentarios")),
+       appBar: AppBar(title: const Text("")),
         resizeToAvoidBottomInset: true,
         body: SafeArea(
           child: LayoutBuilder(
@@ -138,7 +138,13 @@ class _PantallaComentarState extends State<PantallaComentar> {
                                     publicacion!['usuarios']['foto_url'],
                                   ),
                                 ),
-                                title: Text(publicacion!['usuarios']['nombre']),
+                                title: Text(
+                                  publicacion!['usuarios']['nombre'],
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold, 
+                                    fontFamily: 'Verdana'
+                                  ),
+                                  ),
                               ),
                               Image.network(
                                 publicacion!['imagen_url'],
@@ -159,7 +165,13 @@ class _PantallaComentarState extends State<PantallaComentar> {
                                 comentario['usuarios']['foto_url'],
                               ),
                             ),
-                            title: Text(comentario['usuarios']['nombre']),
+                            title: Text(
+                              comentario['usuarios']['nombre'],
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold, 
+                                fontFamily: 'Verdana'
+                              ),
+                              ),
                             subtitle: Text(comentario['comentario']),
                           );
                         }).toList(),

@@ -13,11 +13,9 @@ class PerfilUsuarios extends StatefulWidget {
 class _PerfilUsuariosState extends State<PerfilUsuarios> {
   final supabase = Supabase.instance.client;
   bool siguiendo = false;
-  final String serviceId = 'service_5noatff';
-  final String templateId = 'template_a1pp89a';
-  final String publicKey = 'dHgtQ_9jG2aW6HUEa';
-  bool enviandoEmail = false;
   List<Map<String, dynamic>> publicaciones = [];
+  int cantSeguidores = 0;
+  int cantSeguidos = 0;
 
   Future<void> cargarPublicaciones() async {
     final userId = widget.usuario['id'];
@@ -43,9 +41,24 @@ class _PerfilUsuariosState extends State<PerfilUsuarios> {
         .eq('seguidor_id', userId)
         .eq('seguido_id', seguidoId)
         .limit(1);
+
     final data = response as List<dynamic>?;
+    final seguidores = await supabase
+        .from('seguimientos')
+        .select()
+        .eq('seguido_id', seguidoId);
+
+    print('Seguidores encontrados: $seguidores');
+
+    final seguidos = await supabase
+        .from('seguimientos')
+        .select()
+        .eq('seguidor_id', seguidoId);
+    print('Seguidos encontrados: $seguidos');
     setState(() {
       siguiendo = data != null && data.isNotEmpty;
+      cantSeguidores = seguidores.length;
+      cantSeguidos = seguidos.length;
     });
   }
 
@@ -56,58 +69,11 @@ class _PerfilUsuariosState extends State<PerfilUsuarios> {
     cargarPublicaciones();
   }
 
-  // Future<void> enviarEmail(String seguidoId) async {
-  //   final userId = supabase.auth.currentUser!.id;
-
-  //   final seguidorR = await supabase
-  //       .from('usuarios')
-  //       .select('nick,nombre')
-  //       .eq('id', userId)
-  //       .single();
-
-  //   final seguidoR = await supabase
-  //       .from('usuarios')
-  //       .select('nick,nombre,email')
-  //       .eq('id', seguidoId)
-  //       .single();
-
-  //   final emailSeguido = seguidoR['email'];
-
-  //   if (emailSeguido == null) {
-  //     print('No se pudo obtener el email del usuario seguido');
-  //     return;
-  //   }
-
-  //   final templateParams = {
-  //     'user_email': emailSeguido,
-  //     // Agrega más campos si los usas en tu template, por ahora solo este
-  //   };
-
-  //   try {
-  //     await EmailJS.send(
-  //       serviceId,
-  //       templateId,
-  //       templateParams,
-  //       const EmailJS.Options(
-  //         publicKey: 'dHgtQ_9jG2aW6HUEa',
-  //       ),
-  //     );
-  //     print('✅ Email enviado exitosamente con EmailJS');
-  //   } catch (error) {
-  //     if (error is EmailJS.EmailJSResponseStatus) {
-  //       print('❌ Error ${error.status}: ${error.text}');
-  //     } else {
-  //       print('❌ Error desconocido: ${error.toString()}');
-  //     }
-  //   }
-  // }
-
   Future<void> seguirUsuario() async {
     final userId = supabase.auth.currentUser!.id;
     final seguidoId = widget.usuario['id'];
 
     try {
-      // Verificamos si ya lo sigues
       final existe = await supabase
           .from('seguimientos')
           .select()
@@ -119,8 +85,6 @@ class _PerfilUsuariosState extends State<PerfilUsuarios> {
         print('Ya sigues a este usuario.');
         return;
       }
-
-      // Insertar seguimiento
       await supabase.from('seguimientos').insert({
         'seguidor_id': userId,
         'seguido_id': seguidoId,
@@ -131,7 +95,6 @@ class _PerfilUsuariosState extends State<PerfilUsuarios> {
       });
     } catch (e) {
       print('Error al seguir: $e');
-      // Puedes mostrar un SnackBar si quieres
     }
   }
 
@@ -151,7 +114,6 @@ class _PerfilUsuariosState extends State<PerfilUsuarios> {
       });
     } catch (e) {
       print('Error al dejar de seguir: $e');
-      // Puedes mostrar un SnackBar o alerta
     }
   }
 
@@ -160,29 +122,85 @@ class _PerfilUsuariosState extends State<PerfilUsuarios> {
     final persona = widget.usuario;
     return Scaffold(
       appBar: AppBar(
-        title: Text('${persona['nick']}'),
+        title: Text(
+          '${persona['nick']}',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Verdana',
+            fontSize: 24,
+          ),
+        ),
         backgroundColor: Color.fromRGBO(98, 67, 159, 0.988),
         foregroundColor: Colors.white,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(15.0),
         child: Column(
           children: [
-            CircleAvatar(
-              radius: 50,
-              backgroundImage: persona['foto_url'] != null
-                  ? NetworkImage(persona['foto_url'])
-                  : null,
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 50,
+                  backgroundImage: persona['foto_url'] != null
+                      ? NetworkImage(persona['foto_url'])
+                      : null,
+                ),
+                SizedBox(width: 10),
+                Column(
+                  children: [
+                    Text(
+                      '${persona['nombre']}',
+                      style: TextStyle(
+                        color: Color.fromRGBO(98, 67, 159, 0.988),
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Verdana',
+                        fontSize: 20,
+                      ),
+                    ),
+                    SizedBox(height: 10,),
+                    Row(
+                      children: [
+                        Column(
+                          children: [
+                            Text(
+                              '$cantSeguidos',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                            SizedBox(height: 10,),
+                            Text(
+                              'Seguidos',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                        SizedBox(width: 20,),
+                        Column(
+                          children: [
+                            Text(
+                              '$cantSeguidores',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                            SizedBox(height: 10,),
+                            Text(
+                              'Seguidores',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
             ),
-            SizedBox(height: 20),
-            Text(
-              persona['nombre'] ?? '',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              '@${persona['nick']}',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
+
             const SizedBox(height: 30),
             ElevatedButton(
               onPressed: () {
@@ -200,7 +218,7 @@ class _PerfilUsuariosState extends State<PerfilUsuarios> {
               child: Text(
                 siguiendo ? 'Dejar de seguir' : 'Seguir',
                 style: TextStyle(
-                  color: siguiendo? Colors.black : Colors.white,
+                  color: siguiendo ? Colors.black : Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -221,7 +239,7 @@ class _PerfilUsuariosState extends State<PerfilUsuarios> {
                     itemBuilder: (context, index) {
                       final pub = publicaciones[index];
                       return Image.network(
-                        pub['imagen_url'], // Asegúrate de que se llama así en tu tabla
+                        pub['imagen_url'],
                         fit: BoxFit.cover,
                       );
                     },

@@ -30,27 +30,23 @@ Future<void> cargarMsj() async {
 
       final userId = supabase.auth.currentUser!.id;
       
-      // Método 1: Mensajes enviados por mí
       final mensajesEnviados = await supabase
         .from('mensajes')
         .select()
         .eq('emisor_id', userId)
         .eq('receptor_id', widget.receptorId);
 
-      // Método 2: Mensajes recibidos por mí
       final mensajesRecibidos = await supabase
         .from('mensajes')
         .select()
         .eq('emisor_id', widget.receptorId)
         .eq('receptor_id', userId);
 
-      // Combinar y ordenar
       List<Map<String, dynamic>> todosMensajes = [
         ...List<Map<String,dynamic>>.from(mensajesEnviados),
         ...List<Map<String,dynamic>>.from(mensajesRecibidos),
       ];
       
-      // Ordenar por fecha
       todosMensajes.sort((a, b) {
         if (a['created_at'] == null || b['created_at'] == null) return 0;
         return DateTime.parse(a['created_at']).compareTo(DateTime.parse(b['created_at']));
@@ -58,7 +54,6 @@ Future<void> cargarMsj() async {
 
       setState(() {
         mensajes = todosMensajes;
-        // isLoading = false;
       });
       
       
@@ -95,8 +90,14 @@ Future<void> cargarMsj() async {
     final userId =supabase.auth.currentUser!.id;
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.receptorNombre),
-        backgroundColor: Colors.purple,
+        title: Text(
+          widget.receptorNombre,
+          style: TextStyle(
+            fontWeight: FontWeight.bold, 
+            fontFamily: 'Verdana'
+            ),
+          ),
+        backgroundColor: Color.fromRGBO(98, 67, 159, 0.988),
         foregroundColor: Colors.white,
       ),
       body: Column(
@@ -115,7 +116,7 @@ Future<void> cargarMsj() async {
                   child: Container(
                     decoration: BoxDecoration(
                       color: esMio
-                          ? Colors.purple.shade100
+                          ? Color.fromRGBO(204, 181, 252, 0.976)
                           : Colors.grey.shade300,
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -141,7 +142,7 @@ Future<void> cargarMsj() async {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.send, color: Colors.purple),
+                  icon: const Icon(Icons.send, color: Color.fromRGBO(98, 67, 159, 0.988),),
                   onPressed: enviarMsj,
                 ),
               ],
