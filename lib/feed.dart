@@ -40,7 +40,6 @@ class _FeedState extends State<Feed> {
           .inFilter('usuario_id', seguidos)
           .order('created_at', ascending: false);
 
-      // Agrupar por usuario y tomar solo la más reciente por usuario
       final Map<String, Map<String, dynamic>> historiasPorUsuario = {};
       for (final historia in response) {
         final id = historia['usuario_id'];

@@ -61,7 +61,7 @@ class _HistoriasUsuarioState extends State<HistoriasUsuario> {
         videoController = null;
       }
     } else {
-      Navigator.pop(context); // Terminar vista
+      Navigator.pop(context);
     }
   }
 

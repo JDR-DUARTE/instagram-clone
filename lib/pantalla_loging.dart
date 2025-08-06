@@ -58,8 +58,6 @@ Widget build(BuildContext context) {
                   child: Column(
                     children: [
                       SizedBox(height: 40),
-                      
-                      // Imagen centrada arriba
                       Center(
                         child: Image.asset(
                           'assets/conexa1.png',
@@ -69,8 +67,6 @@ Widget build(BuildContext context) {
                       ),
 
                       SizedBox(height: 18),
-
-                      // Formulario (sin Expanded)
                       mostrarReg
                           ? FormularioRegistro()
                           : FormularioLoging(onLogin: hacerLogin),

@@ -23,10 +23,6 @@ class _PantallaChatState extends State<PantallaChat> {
 
 Future<void> cargarMsj() async {
     try {
-      // setState(() {
-      //   isLoading = true;
-      //   errorMessage = null;
-      // });
 
       final userId = supabase.auth.currentUser!.id;
       
@@ -61,7 +57,6 @@ Future<void> cargarMsj() async {
       print('el error es : $e');
       setState(() {
         errorMessage = e.toString();
-        // isLoading = false;
       });
     }
   }
@@ -150,7 +145,6 @@ Future<void> cargarMsj() async {
           )
         ],
       ),
-
     );
   }
 }

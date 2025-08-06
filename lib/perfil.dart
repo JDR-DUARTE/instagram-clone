@@ -131,13 +131,6 @@ class _PerfilState extends State<Perfil> {
                           fontSize: 20,
                         ),
                       ),
-                      // Text(
-                      //   '@${perfil!['nick']}',
-                      //   style: const TextStyle(
-                      //     fontSize: 16,
-                      //     color: Colors.grey,
-                      //   ),
-                      // ),
                       SizedBox(height: 5),
                       Row(
                         children: [
