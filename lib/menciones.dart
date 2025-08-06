@@ -25,7 +25,9 @@ class _MencionesState extends State<Menciones> {
 
       final response = await supabase
           .from('menciones')
-          .select('id, comentario_id, comentarios(comentario, publicacion_id, publicaciones(id, imagen_url))')
+          .select(
+            'id, comentario_id, comentarios(comentario, publicacion_id, publicaciones(id, imagen_url))',
+          )
           .eq('mencionado_id', userId);
       print(response);
 
@@ -45,7 +47,17 @@ class _MencionesState extends State<Menciones> {
   Widget build(BuildContext context) {
     if (cargando) {
       return Scaffold(
-        appBar: AppBar(title: Text('Menciones')),
+        appBar: AppBar(
+          title: Text(
+            'Menciones',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Verdana',
+            ),
+          ),
+          backgroundColor: Color.fromRGBO(98, 67, 159, 0.988),
+          foregroundColor: Colors.white,
+        ),
         body: Center(child: CircularProgressIndicator()),
       );
     }
@@ -59,7 +71,12 @@ class _MencionesState extends State<Menciones> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Menciones')
+        title: Text(
+          'Menciones',
+          style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Verdana'),
+        ),
+        backgroundColor: Color.fromRGBO(98, 67, 159, 0.988),
+        foregroundColor: Colors.white,
       ),
       body: ListView.builder(
         itemCount: menciones.length,
@@ -72,9 +89,16 @@ class _MencionesState extends State<Menciones> {
             margin: EdgeInsets.all(10),
             child: ListTile(
               leading: publicacion != null && publicacion['imagen_url'] != null
-                  ? Image.network(publicacion['imagen_url'], width: 50, height: 50, fit: BoxFit.cover)
+                  ? Image.network(
+                      publicacion['imagen_url'],
+                      width: 50,
+                      height: 50,
+                      fit: BoxFit.cover,
+                    )
                   : Icon(Icons.image_not_supported),
-              title: comentario != null ? Text(comentario['comentario'] ?? '') : Text('Comentario no disponible'),
+              title: comentario != null
+                  ? Text(comentario['comentario'] ?? '')
+                  : Text('Comentario no disponible'),
               subtitle: Text('Has sido mencionado en una publicación'),
               onTap: () {
                 // Navigator.push(...);
